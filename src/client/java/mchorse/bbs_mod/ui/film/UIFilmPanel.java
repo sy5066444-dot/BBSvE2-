@@ -40,6 +40,7 @@ import mchorse.bbs_mod.ui.film.audio.UIAudioRecorder;
 import mchorse.bbs_mod.ui.film.controller.UIFilmController;
 import mchorse.bbs_mod.ui.film.replays.UIReplaysEditor;
 import mchorse.bbs_mod.ui.film.utils.UIFilmUndoHandler;
+import mchorse.bbs_mod.ui.film.utils.UIRadialMenuOverlay;
 import mchorse.bbs_mod.ui.film.utils.undo.UIUndoHistoryOverlay;
 import mchorse.bbs_mod.ui.framework.UIContext;
 import mchorse.bbs_mod.ui.framework.elements.UIElement;
@@ -100,6 +101,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
 
     /* Icon bar buttons */
     public UIIcon openHistory;
+    public UIIcon openRadialMenu;
     public UIIcon toggleHorizontal;
     public UIIcon openCameraEditor;
     public UIIcon openReplayEditor;
@@ -220,6 +222,11 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
             UIOverlay.addOverlay(this.getContext(), new UIUndoHistoryOverlay(this), 200, 0.6F);
         });
         this.openHistory.tooltip(UIKeys.FILM_OPEN_HISTORY, Direction.LEFT);
+        this.openRadialMenu = new UIIcon(Icons.ALL_DIRECTIONS, (b) ->
+        {
+            UIOverlay.addOverlay(this.getContext(), new UIRadialMenuOverlay(this), 260, 280);
+        });
+        this.openRadialMenu.tooltip(IKey.raw("Quick tools"), Direction.LEFT);
         this.toggleHorizontal = new UIIcon(() -> BBSSettings.editorLayoutSettings.isHorizontal() ? Icons.EXCHANGE : Icons.CONVERT, (b) ->
         {
             BBSSettings.editorLayoutSettings.setHorizontal(!BBSSettings.editorLayoutSettings.isHorizontal());
@@ -235,7 +242,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
         this.openActionEditor.tooltip(UIKeys.FILM_OPEN_ACTION_EDITOR, Direction.LEFT);
 
         /* Setup elements */
-        this.iconBar.add(this.openHistory, this.toggleHorizontal.marginTop(9), this.openCameraEditor.marginTop(9), this.openReplayEditor, this.openActionEditor);
+        this.iconBar.add(this.openRadialMenu, this.openHistory, this.toggleHorizontal.marginTop(9), this.openCameraEditor.marginTop(9), this.openReplayEditor, this.openActionEditor);
 
         this.editor.add(this.main, new UIRenderable(this::renderIcons));
         this.main.add(this.cameraEditor, this.replayEditor, this.actionEditor, this.editArea, this.preview, this.draggableMain);
