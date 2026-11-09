@@ -223,6 +223,7 @@
     "bbs.ui.camera.clips.bbs:shake": "Shake",
     "bbs.ui.camera.clips.bbs:subtitle": "Subtitle",
     "bbs.ui.camera.clips.bbs:swipe": "Swipe arm",
+    "bbs.ui.camera.clips.bbs:interact_entity": "Interact entity",
     "bbs.ui.camera.clips.bbs:tracker": "Tracker",
     "bbs.ui.camera.clips.bbs:translate": "Translate",
     "bbs.ui.camera.clips.bbs:use_block_item": "Use item on block",
