@@ -1,5 +1,6 @@
 package mchorse.bbs_mod;
 
+import mchorse.bbs_mod.l10n.keys.IKey;
 import mchorse.bbs_mod.settings.SettingsBuilder;
 import mchorse.bbs_mod.settings.values.core.ValueLink;
 import mchorse.bbs_mod.settings.values.core.ValueString;
@@ -23,6 +24,7 @@ public class BBSSettings
     public static ValueStringKeys disabledSheets;
     public static ValueLanguage language;
     public static ValueInt primaryColor;
+    public static ValueInt themePreset;
     public static ValueBoolean enableTrackpadIncrements;
     public static ValueBoolean enableTrackpadScrolling;
     public static ValueInt userIntefaceScale;
@@ -117,6 +119,28 @@ public class BBSSettings
         return primaryColor.get() | alpha;
     }
 
+    /* BBSvE: one-tap theme presets (index 0 = custom, leaves the colors alone) */
+    private static final int[] THEME_ACCENTS = {0, 0xff3399, 0x44ddff, 0xff8833, 0x33ff66, 0x00ccff};
+    private static final int[] THEME_BACKGROUNDS = {0, 0xdd200014, 0xdd001420, 0xdd200c00, 0xdd001a06, 0xff000000};
+
+    public static void applyThemePreset()
+    {
+        if (themePreset == null || primaryColor == null || backgroundColor == null)
+        {
+            return;
+        }
+
+        int preset = themePreset.get();
+
+        if (preset <= 0 || preset >= THEME_ACCENTS.length)
+        {
+            return;
+        }
+
+        primaryColor.set(THEME_ACCENTS[preset]);
+        backgroundColor.set(THEME_BACKGROUNDS[preset]);
+    }
+
     public static int getDefaultDuration()
     {
         return duration == null ? 30 : duration.get();
@@ -152,6 +176,16 @@ public class BBSSettings
         builder.category("appearance");
         builder.register(language = new ValueLanguage("language"));
         primaryColor = builder.getInt("primary_color", Colors.ACTIVE).color();
+        themePreset = builder.getInt("theme_preset", 0, 0, 5);
+        themePreset.modes(
+            IKey.raw("Custom (my colors)"),
+            IKey.raw("Neon Pink"),
+            IKey.raw("Ice Blue"),
+            IKey.raw("Sunset Orange"),
+            IKey.raw("Matrix Green"),
+            IKey.raw("OLED Black")
+        );
+        themePreset.postCallback((value, flag) -> applyThemePreset());
         enableTrackpadIncrements = builder.getBoolean("trackpad_increments", true);
         enableTrackpadScrolling = builder.getBoolean("trackpad_scrolling", true);
         userIntefaceScale = builder.getInt("ui_scale", 2, 0, 4);
