@@ -152,6 +152,7 @@ public class Recorder extends WorldFilmController
             Morph morph = Morph.getMorph(player);
 
             this.keyframes.record(this.tick, morph.entity, null);
+            this.keyframes.fov.insert(this.tick, (double) MinecraftClient.getInstance().options.getFov().getValue());
         }
 
         super.update();
