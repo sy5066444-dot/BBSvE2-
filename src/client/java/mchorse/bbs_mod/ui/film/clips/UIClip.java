@@ -3,6 +3,7 @@ package mchorse.bbs_mod.ui.film.clips;
 import mchorse.bbs_mod.BBSSettings;
 import mchorse.bbs_mod.actions.types.AttackActionClip;
 import mchorse.bbs_mod.actions.types.DamageActionClip;
+import mchorse.bbs_mod.actions.types.InteractEntityActionClip;
 import mchorse.bbs_mod.actions.types.SwipeActionClip;
 import mchorse.bbs_mod.actions.types.blocks.BreakBlockActionClip;
 import mchorse.bbs_mod.actions.types.blocks.InteractBlockActionClip;
@@ -44,6 +45,7 @@ import mchorse.bbs_mod.ui.film.clips.actions.UIDamageActionClip;
 import mchorse.bbs_mod.ui.film.clips.actions.UIInteractBlockActionClip;
 import mchorse.bbs_mod.ui.film.clips.actions.UIItemDropActionClip;
 import mchorse.bbs_mod.ui.film.clips.actions.UIPlaceBlockActionClip;
+import mchorse.bbs_mod.ui.film.clips.actions.UIInteractEntityActionClip;
 import mchorse.bbs_mod.ui.film.clips.actions.UISwipeActionClip;
 import mchorse.bbs_mod.ui.film.clips.actions.UIUseBlockItemActionClip;
 import mchorse.bbs_mod.ui.film.clips.actions.UIUseItemActionClip;
@@ -114,6 +116,7 @@ public abstract class UIClip <T extends Clip> extends UIElement
         register(DamageActionClip.class, UIDamageActionClip::new);
         register(ItemDropActionClip.class, UIItemDropActionClip::new);
         register(SwipeActionClip.class, UISwipeActionClip::new);
+        register(InteractEntityActionClip.class, UIInteractEntityActionClip::new);
     }
 
     public static <T extends Clip> void register(Class<T> clazz, IUIClipFactory<T> factory)
