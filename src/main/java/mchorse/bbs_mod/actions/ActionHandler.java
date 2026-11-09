@@ -1,8 +1,10 @@
 package mchorse.bbs_mod.actions;
 
+import mchorse.bbs_mod.actions.types.InteractEntityActionClip;
 import mchorse.bbs_mod.actions.types.blocks.PlaceBlockActionClip;
 import mchorse.bbs_mod.actions.types.chat.ChatActionClip;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -10,6 +12,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
@@ -34,6 +38,24 @@ public class ActionHandler
                     return clip;
                 });
             }
+        });
+
+        /* BBSvE: record right clicking on entities */
+        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) ->
+        {
+            if (player instanceof ServerPlayerEntity serverPlayer && hand == Hand.MAIN_HAND)
+            {
+                actions.addAction(serverPlayer, () ->
+                {
+                    InteractEntityActionClip clip = new InteractEntityActionClip();
+
+                    clip.hand.set(true);
+
+                    return clip;
+                });
+            }
+
+            return ActionResult.PASS;
         });
 
         PlayerBlockBreakEvents.AFTER.register((World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity) ->
