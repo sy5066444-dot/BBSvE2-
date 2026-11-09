@@ -5,6 +5,7 @@ import mchorse.bbs_mod.camera.controller.CameraController;
 import mchorse.bbs_mod.camera.controller.ICameraController;
 import mchorse.bbs_mod.camera.controller.PlayCameraController;
 import mchorse.bbs_mod.client.BBSRendering;
+import mchorse.bbs_mod.film.replays.ReplayKeyframes;
 import mchorse.bbs_mod.items.GunZoom;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
@@ -52,6 +53,14 @@ public class GameRendererMixin
         if (controller.getCurrent() != null && !BBSRendering.isIrisShadowPass())
         {
             info.setReturnValue(controller.getFOV());
+
+            return;
+        }
+
+        /* BBSvE: first person replay FOV track */
+        if (System.currentTimeMillis() - ReplayKeyframes.playbackFovTime < 250L && ReplayKeyframes.playbackFov > 0D && !BBSRendering.isIrisShadowPass())
+        {
+            info.setReturnValue(ReplayKeyframes.playbackFov);
         }
     }
 
