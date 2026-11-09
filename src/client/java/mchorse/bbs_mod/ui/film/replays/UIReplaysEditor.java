@@ -106,6 +106,7 @@ public class UIReplaysEditor extends UIElement
         COLORS.put("stick_ry", Colors.GREEN);
         COLORS.put("trigger_l", Colors.RED);
         COLORS.put("trigger_r", Colors.GREEN);
+        COLORS.put("fov", Colors.PINK);
         COLORS.put("extra1_x", Colors.RED);
         COLORS.put("extra1_y", Colors.GREEN);
         COLORS.put("extra2_x", Colors.RED);
@@ -160,6 +161,7 @@ public class UIReplaysEditor extends UIElement
         ICONS.put("stick_lx", Icons.LEFT_STICK);
         ICONS.put("stick_rx", Icons.RIGHT_STICK);
         ICONS.put("trigger_l", Icons.TRIGGER);
+        ICONS.put("fov", Icons.CAMERA);
         ICONS.put("extra1_x", Icons.CURVES);
         ICONS.put("extra2_x", Icons.CURVES);
         ICONS.put("item_main_hand", Icons.LIMB);
