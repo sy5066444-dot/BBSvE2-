@@ -2,6 +2,8 @@ package mchorse.bbs_mod.camera.clips.modifiers;
 
 import mchorse.bbs_mod.camera.clips.CameraClip;
 import mchorse.bbs_mod.camera.data.Position;
+import mchorse.bbs_mod.film.replays.ReplayKeyframes;
+import mchorse.bbs_mod.forms.entities.IEntity;
 import mchorse.bbs_mod.settings.values.numeric.ValueFloat;
 import mchorse.bbs_mod.utils.MathUtils;
 import mchorse.bbs_mod.utils.clips.ClipContext;
@@ -9,13 +11,16 @@ import mchorse.bbs_mod.utils.interps.IInterp;
 import mchorse.bbs_mod.utils.interps.Interpolation;
 import mchorse.bbs_mod.utils.interps.Interpolations;
 
+import java.util.List;
+
 /**
  * BBSvE: FOV clip
  *
- * Changes the field of view of whatever camera is running underneath it,
- * going from "from" FOV to "to" FOV over the duration of the clip.
+ * Pick an actor and the camera FOV follows that actor's recorded first
+ * person FOV (the fov track of its replay). Without an actor (or when the
+ * actor has no recorded FOV) it zooms from "from" to "to" over the clip.
  */
-public class FovClip extends CameraClip
+public class FovClip extends EntityClip
 {
     public final ValueFloat from = new ValueFloat("from", 70F);
     public final ValueFloat to = new ValueFloat("to", 40F);
@@ -33,6 +38,20 @@ public class FovClip extends CameraClip
     @Override
     protected void applyClip(ClipContext context, Position position)
     {
+        List<IEntity> entities = this.getEntities(context);
+
+        if (!entities.isEmpty() && entities.get(0) != null)
+        {
+            Double recorded = ReplayKeyframes.entityFov.get(entities.get(0));
+
+            if (recorded != null)
+            {
+                position.angle.fov = recorded.floatValue();
+
+                return;
+            }
+        }
+
         float progress = (context.relativeTick + context.transition) / (float) this.duration.get();
 
         progress = MathUtils.clamp(progress, 0F, 1F);
