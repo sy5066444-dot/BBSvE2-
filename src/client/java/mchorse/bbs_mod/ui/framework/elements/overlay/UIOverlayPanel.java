@@ -189,7 +189,7 @@ public class UIOverlayPanel extends UIElement
         this.events.emit(new UIOverlayCloseEvent(this));
     }
 
-    /* BBSvE: frosted glass look (translucent gradient, bright rim, rounded corners) */
+    /* BBSvE: frosted glass look, every part adjustable in Settings > glass */
     private void renderGlass(UIContext context, int color)
     {
         int x1 = this.area.x;
@@ -197,48 +197,94 @@ public class UIOverlayPanel extends UIElement
         int x2 = this.area.ex();
         int y2 = this.area.ey();
         int h = y2 - y1;
-        int r = Math.max(2, Math.min(8, Math.min(x2 - x1, h) / 4));
+        int r = Math.max(0, Math.min(BBSSettings.glassRadius.get(), Math.min(x2 - x1, h) / 2));
         int rgb = color & 0xffffff;
-        int top = (0x70 << 24) | lerpRGB(rgb, 0xffffff, 0.55F);
-        int bottom = (0xb8 << 24) | lerpRGB(rgb, 0x000000, 0.75F);
+        int top = (pct(BBSSettings.glassOpacityTop.get()) << 24) | lerpRGB(rgb, 0xffffff, 1F - BBSSettings.glassTint.get() / 100F);
+        int bottom = (pct(BBSSettings.glassOpacityBottom.get()) << 24) | lerpRGB(rgb, 0x000000, BBSSettings.glassDarkness.get() / 100F);
 
-        context.batcher.dropShadow(x1, y1, x2, y2, 14, Colors.A25 | rgb, rgb);
+        if (BBSSettings.glassFlip.get())
+        {
+            int swap = top;
+
+            top = bottom;
+            bottom = swap;
+        }
+
+        if (BBSSettings.glassShadow.get())
+        {
+            context.batcher.dropShadow(x1, y1, x2, y2, BBSSettings.glassShadowSize.get(), (pct(BBSSettings.glassGlow.get()) << 24) | rgb, rgb);
+        }
 
         /* Middle section in one gradient, rounded corner rows one by one */
-        context.batcher.gradientVBox(x1, y1 + r, x2, y2 - r, lerpARGB(top, bottom, r / (float) Math.max(1, h - 1)), lerpARGB(top, bottom, (h - r) / (float) Math.max(1, h - 1)));
+        float span = Math.max(1, h - 1);
+
+        context.batcher.gradientVBox(x1, y1 + r, x2, y2 - r, lerpARGB(top, bottom, r / span), lerpARGB(top, bottom, (h - r) / span));
 
         for (int i = 0; i < r; i++)
         {
             int inset = cornerInset(r, i);
-            int topRow = lerpARGB(top, bottom, i / (float) Math.max(1, h - 1));
-            int bottomRow = lerpARGB(top, bottom, (h - 1 - i) / (float) Math.max(1, h - 1));
 
-            context.batcher.box(x1 + inset, y1 + i, x2 - inset, y1 + i + 1, topRow);
-            context.batcher.box(x1 + inset, y2 - i - 1, x2 - inset, y2 - i, bottomRow);
+            context.batcher.box(x1 + inset, y1 + i, x2 - inset, y1 + i + 1, lerpARGB(top, bottom, i / span));
+            context.batcher.box(x1 + inset, y2 - i - 1, x2 - inset, y2 - i, lerpARGB(top, bottom, (h - 1 - i) / span));
         }
 
         /* Soft shine on the upper part */
-        context.batcher.gradientVBox(x1 + 2, y1 + r, x2 - 2, y1 + Math.max(r + 1, h / 3), 0x22ffffff, 0x00ffffff);
+        int shine = pct(BBSSettings.glassShine.get());
 
-        /* Bright rim: strongest on top, faint on the bottom */
-        int hi = 0x99ffffff;
-        int mid = 0x55ffffff;
-        int low = 0x33ffffff;
-
-        context.batcher.box(x1 + r, y1, x2 - r, y1 + 1, hi);
-        context.batcher.box(x1 + r, y2 - 1, x2 - r, y2, low);
-        context.batcher.box(x1, y1 + r, x1 + 1, y2 - r, mid);
-        context.batcher.box(x2 - 1, y1 + r, x2, y2 - r, mid);
-
-        for (int i = 0; i < r; i++)
+        if (shine > 0)
         {
-            int inset = cornerInset(r, i);
-
-            context.batcher.box(x1 + inset, y1 + i, x1 + inset + 1, y1 + i + 1, hi);
-            context.batcher.box(x2 - inset - 1, y1 + i, x2 - inset, y1 + i + 1, hi);
-            context.batcher.box(x1 + inset, y2 - i - 1, x1 + inset + 1, y2 - i, low);
-            context.batcher.box(x2 - inset - 1, y2 - i - 1, x2 - inset, y2 - i, low);
+            context.batcher.gradientVBox(x1 + 2, y1 + r, x2 - 2, y1 + Math.max(r + 1, h / 3), (shine << 24) | 0xffffff, 0x00ffffff);
         }
+
+        /* Darker strip behind the title */
+        if (BBSSettings.glassTitleStrip.get() && y1 + 20 < y2 - r)
+        {
+            context.batcher.box(x1 + 1, y1 + r, x2 - 1, y1 + 20, 0x30000000);
+        }
+
+        /* Bright rim: strongest on top, fainter on the sides and bottom */
+        if (BBSSettings.glassRim.get())
+        {
+            int base = rgb;
+
+            if (!BBSSettings.glassRimAccent.get())
+            {
+                base = 0xffffff;
+            }
+
+            int strong = pct(BBSSettings.glassRimBrightness.get());
+            int hi = (strong << 24) | base;
+            int mid = ((strong * 55 / 100) << 24) | base;
+            int low = BBSSettings.glassRimBottom.get() ? (((strong * 33 / 100) << 24) | base) : 0;
+
+            context.batcher.box(x1 + r, y1, x2 - r, y1 + 1, hi);
+            context.batcher.box(x1, y1 + r, x1 + 1, y2 - r, mid);
+            context.batcher.box(x2 - 1, y1 + r, x2, y2 - r, mid);
+
+            if (low != 0)
+            {
+                context.batcher.box(x1 + r, y2 - 1, x2 - r, y2, low);
+            }
+
+            for (int i = 0; i < r; i++)
+            {
+                int inset = cornerInset(r, i);
+
+                context.batcher.box(x1 + inset, y1 + i, x1 + inset + 1, y1 + i + 1, hi);
+                context.batcher.box(x2 - inset - 1, y1 + i, x2 - inset, y1 + i + 1, hi);
+
+                if (low != 0)
+                {
+                    context.batcher.box(x1 + inset, y2 - i - 1, x1 + inset + 1, y2 - i, low);
+                    context.batcher.box(x2 - inset - 1, y2 - i - 1, x2 - inset, y2 - i, low);
+                }
+            }
+        }
+    }
+
+    private static int pct(int value)
+    {
+        return Math.max(0, Math.min(100, value)) * 255 / 100;
     }
 
     private static int cornerInset(int r, int row)
