@@ -25,37 +25,6 @@ public class BBSSettings
     public static ValueLanguage language;
     public static ValueInt primaryColor;
     public static ValueInt themePreset;
-    public static ValueBoolean glassUi;
-    public static ValueInt glassOpacityTop;
-    public static ValueInt glassOpacityBottom;
-    public static ValueInt glassRadius;
-    public static ValueInt glassTint;
-    public static ValueInt glassDarkness;
-    public static ValueInt glassShine;
-    public static ValueInt glassRimBrightness;
-    public static ValueInt glassShadowSize;
-    public static ValueInt glassGlow;
-    public static ValueBoolean glassRim;
-    public static ValueBoolean glassRimAccent;
-    public static ValueBoolean glassRimBottom;
-    public static ValueBoolean glassShadow;
-    public static ValueBoolean glassTitleStrip;
-    public static ValueBoolean glassFlip;
-    public static ValueBoolean buttonGlass;
-    public static ValueInt buttonRadius;
-    public static ValueInt buttonOpacity;
-    public static ValueInt buttonShine;
-    public static ValueBoolean buttonRim;
-    public static ValueInt buttonRimBrightness;
-    public static ValueInt buttonHoverBoost;
-    public static ValueBoolean buttonTextShadow;
-    public static ValueBoolean taskbarGlass;
-    public static ValueInt taskbarOpacity;
-    public static ValueInt taskbarTint;
-    public static ValueBoolean taskbarRim;
-    public static ValueBoolean iconHoverBg;
-    public static ValueInt iconHoverOpacity;
-    public static ValueInt iconHoverRadius;
     public static ValueBoolean enableTrackpadIncrements;
     public static ValueBoolean enableTrackpadScrolling;
     public static ValueInt userIntefaceScale;
@@ -120,6 +89,9 @@ public class BBSSettings
     public static ValueBoolean recordingOverlays;
     public static ValueInt recordingPoseTransformOverlays;
     public static ValueBoolean recordingCameraPreview;
+    public static ValueBoolean recordingFov;
+    public static ValueBoolean recordingFovPlayback;
+    public static ValueBoolean recordingEntityInteract;
 
     public static ValueBoolean renderAllModelBlocks;
     public static ValueBoolean clickModelBlocks;
@@ -217,7 +189,6 @@ public class BBSSettings
             IKey.raw("OLED Black")
         );
         themePreset.postCallback((value, flag) -> applyThemePreset());
-        glassUi = builder.getBoolean("glass_ui", true);
         enableTrackpadIncrements = builder.getBoolean("trackpad_increments", true);
         enableTrackpadScrolling = builder.getBoolean("trackpad_scrolling", true);
         userIntefaceScale = builder.getInt("ui_scale", 2, 0, 4);
@@ -235,42 +206,6 @@ public class BBSSettings
         disabledSheets.set(defaultFilters);
         builder.register(favoriteColors);
         builder.register(disabledSheets);
-
-        builder.category("glass");
-        glassOpacityTop = builder.getInt("opacity_top", 44, 0, 100);
-        glassOpacityBottom = builder.getInt("opacity_bottom", 72, 0, 100);
-        glassRadius = builder.getInt("corner_radius", 8, 0, 16);
-        glassTint = builder.getInt("tint", 45, 0, 100);
-        glassDarkness = builder.getInt("darkness", 75, 0, 100);
-        glassShine = builder.getInt("shine", 13, 0, 100);
-        glassRim = builder.getBoolean("rim", true);
-        glassRimBrightness = builder.getInt("rim_brightness", 60, 0, 100);
-        glassRimAccent = builder.getBoolean("rim_accent", false);
-        glassRimBottom = builder.getBoolean("rim_bottom", true);
-        glassShadow = builder.getBoolean("shadow", true);
-        glassShadowSize = builder.getInt("shadow_size", 14, 0, 40);
-        glassGlow = builder.getInt("glow", 25, 0, 100);
-        glassTitleStrip = builder.getBoolean("title_strip", false);
-        glassFlip = builder.getBoolean("flip_light", false);
-
-        builder.category("glass_buttons");
-        buttonGlass = builder.getBoolean("glass_buttons", true);
-        buttonRadius = builder.getInt("radius", 5, 0, 10);
-        buttonOpacity = builder.getInt("opacity", 78, 20, 100);
-        buttonShine = builder.getInt("shine", 22, 0, 100);
-        buttonRim = builder.getBoolean("rim", true);
-        buttonRimBrightness = builder.getInt("rim_brightness", 45, 0, 100);
-        buttonHoverBoost = builder.getInt("hover_boost", 20, 0, 100);
-        buttonTextShadow = builder.getBoolean("text_shadow", true);
-
-        builder.category("glass_bars");
-        taskbarGlass = builder.getBoolean("taskbar_glass", true);
-        taskbarOpacity = builder.getInt("taskbar_opacity", 60, 0, 100);
-        taskbarTint = builder.getInt("taskbar_tint", 35, 0, 100);
-        taskbarRim = builder.getBoolean("taskbar_rim", true);
-        iconHoverBg = builder.getBoolean("icon_hover_bg", true);
-        iconHoverOpacity = builder.getInt("icon_hover_opacity", 25, 0, 100);
-        iconHoverRadius = builder.getInt("icon_hover_radius", 5, 0, 10);
 
         builder.category("tutorials");
         enableCursorRendering = builder.getBoolean("cursor", false);
@@ -332,6 +267,9 @@ public class BBSSettings
         recordingOverlays = builder.getBoolean("overlays", true);
         recordingPoseTransformOverlays = builder.getInt("pose_transform_overlays", 0, 0, 42);
         recordingCameraPreview = builder.getBoolean("camera_preview", true);
+        recordingFov = builder.getBoolean("fov", true);
+        recordingFovPlayback = builder.getBoolean("fov_playback", true);
+        recordingEntityInteract = builder.getBoolean("entity_interact", true);
 
         builder.category("model_blocks");
         renderAllModelBlocks = builder.getBoolean("render_all", true);
