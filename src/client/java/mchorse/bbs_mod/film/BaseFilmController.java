@@ -3,6 +3,7 @@ package mchorse.bbs_mod.film;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import mchorse.bbs_mod.BBSSettings;
 import mchorse.bbs_mod.client.renderer.ModelBlockEntityRenderer;
 import mchorse.bbs_mod.entity.ActorEntity;
 import mchorse.bbs_mod.film.replays.Replay;
@@ -542,7 +543,12 @@ public abstract class BaseFilmController
     {
         replay.keyframes.apply(ticks, entity);
 
-        if (replay.fp.get() && !replay.keyframes.fov.isEmpty())
+        if (entity != null && !replay.keyframes.fov.isEmpty())
+        {
+            ReplayKeyframes.entityFov.put(entity, (double) replay.keyframes.fov.interpolate(ticks));
+        }
+
+        if (BBSSettings.recordingFovPlayback.get() && replay.fp.get() && !replay.keyframes.fov.isEmpty())
         {
             ReplayKeyframes.playbackFov = replay.keyframes.fov.interpolate(ticks);
             ReplayKeyframes.playbackFovTime = System.currentTimeMillis();
