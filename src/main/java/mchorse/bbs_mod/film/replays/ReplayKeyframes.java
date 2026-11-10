@@ -36,6 +36,9 @@ public class ReplayKeyframes extends ValueGroup
     public static volatile double playbackFov = 0D;
     public static volatile long playbackFovTime = 0L;
 
+    /* BBSvE: last FOV applied from each actor's fov track, read by the FOV clip */
+    public static final java.util.Map<Object, Double> entityFov = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
     public final KeyframeChannel<Double> x = new KeyframeChannel<>("x", KeyframeFactories.DOUBLE);
     public final KeyframeChannel<Double> y = new KeyframeChannel<>("y", KeyframeFactories.DOUBLE);
     public final KeyframeChannel<Double> z = new KeyframeChannel<>("z", KeyframeFactories.DOUBLE);
