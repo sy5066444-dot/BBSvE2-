@@ -31,6 +31,7 @@ import mchorse.bbs_mod.camera.clips.misc.CurveClip;
 import mchorse.bbs_mod.camera.clips.misc.SubtitleClip;
 import mchorse.bbs_mod.camera.clips.modifiers.AngleClip;
 import mchorse.bbs_mod.camera.clips.modifiers.DollyZoomClip;
+import mchorse.bbs_mod.camera.clips.modifiers.FovClip;
 import mchorse.bbs_mod.camera.clips.modifiers.DragClip;
 import mchorse.bbs_mod.camera.clips.modifiers.LookClip;
 import mchorse.bbs_mod.camera.clips.modifiers.MathClip;
@@ -443,7 +444,8 @@ public class BBSMod implements ModInitializer
             .register(Link.bbs("subtitle"), SubtitleClip.class, new ClipFactoryData(Icons.FONT, 0x888899))
             .register(Link.bbs("curve"), CurveClip.class, new ClipFactoryData(Icons.ARC, 0xff1493))
             .register(Link.bbs("tracker"), TrackerClip.class, new ClipFactoryData(Icons.USER, 0xffffff))
-            .register(Link.bbs("dolly_zoom"), DollyZoomClip.class, new ClipFactoryData(Icons.FILTER, 0x7d56c9));
+            .register(Link.bbs("dolly_zoom"), DollyZoomClip.class, new ClipFactoryData(Icons.FILTER, 0x7d56c9))
+            .register(Link.bbs("fov"), FovClip.class, new ClipFactoryData(Icons.CAMERA, 0x2f8fd8));
 
         factoryActionClips = new MapFactory<Clip, ClipFactoryData>()
             .register(Link.bbs("chat"), ChatActionClip.class, new ClipFactoryData(Icons.BUBBLE, Colors.YELLOW))
