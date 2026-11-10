@@ -25,6 +25,7 @@ public class BBSSettings
     public static ValueLanguage language;
     public static ValueInt primaryColor;
     public static ValueInt themePreset;
+    public static ValueBoolean glassUi;
     public static ValueBoolean enableTrackpadIncrements;
     public static ValueBoolean enableTrackpadScrolling;
     public static ValueInt userIntefaceScale;
@@ -186,6 +187,7 @@ public class BBSSettings
             IKey.raw("OLED Black")
         );
         themePreset.postCallback((value, flag) -> applyThemePreset());
+        glassUi = builder.getBoolean("glass_ui", true);
         enableTrackpadIncrements = builder.getBoolean("trackpad_increments", true);
         enableTrackpadScrolling = builder.getBoolean("trackpad_scrolling", true);
         userIntefaceScale = builder.getInt("ui_scale", 2, 0, 4);
