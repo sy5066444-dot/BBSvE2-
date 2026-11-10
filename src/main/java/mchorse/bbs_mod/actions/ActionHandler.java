@@ -1,5 +1,6 @@
 package mchorse.bbs_mod.actions;
 
+import mchorse.bbs_mod.BBSSettings;
 import mchorse.bbs_mod.actions.types.InteractEntityActionClip;
 import mchorse.bbs_mod.actions.types.blocks.PlaceBlockActionClip;
 import mchorse.bbs_mod.actions.types.chat.ChatActionClip;
@@ -43,7 +44,7 @@ public class ActionHandler
         /* BBSvE: record right clicking on entities */
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) ->
         {
-            if (player instanceof ServerPlayerEntity serverPlayer && hand == Hand.MAIN_HAND)
+            if (BBSSettings.recordingEntityInteract.get() && player instanceof ServerPlayerEntity serverPlayer && hand == Hand.MAIN_HAND)
             {
                 actions.addAction(serverPlayer, () ->
                 {
