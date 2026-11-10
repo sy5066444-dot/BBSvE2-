@@ -19,7 +19,7 @@ public class FovClip extends CameraClip
 {
     public final ValueFloat from = new ValueFloat("from", 70F);
     public final ValueFloat to = new ValueFloat("to", 40F);
-    public final Interpolation interp = new Interpolation("interp", Interpolations.LINEAR);
+    public final Interpolation interp = new Interpolation("interp", Interpolations.MAP, Interpolations.LINEAR);
 
     public FovClip()
     {
