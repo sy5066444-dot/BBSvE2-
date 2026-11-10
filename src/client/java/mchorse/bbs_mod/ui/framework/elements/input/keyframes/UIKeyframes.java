@@ -156,6 +156,7 @@ public class UIKeyframes extends UIElement
                         sheet.channel.postNotify();
                     }
                 });
+                menu.action(Icons.WRENCH, IKey.raw("Keyframe tools"), this::openKeyframeTools);
                 menu.action(Icons.REMOVE, UIKeys.KEYFRAMES_CONTEXT_REMOVE, () -> this.currentGraph.removeSelected());
             }
         });
@@ -507,6 +508,192 @@ public class UIKeyframes extends UIElement
         }
 
         this.getGraph().pickSelected();
+    }
+
+    /* BBSvE: extra keyframe tools */
+
+    private interface SheetOperation
+    {
+        void apply(UIKeyframeSheet sheet, List<Keyframe> selected, IKeyframeFactory factory);
+    }
+
+    private void forSelected(boolean numericOnly, int minCount, SheetOperation operation)
+    {
+        for (UIKeyframeSheet sheet : this.getGraph().getSheets())
+        {
+            List<Keyframe> selected = new ArrayList<>(sheet.selection.getSelected());
+            IKeyframeFactory factory = sheet.channel.getFactory();
+
+            if (selected.size() < minCount || (numericOnly && !KeyframeFactories.isNumeric(factory)))
+            {
+                continue;
+            }
+
+            selected.sort((a, b) -> Float.compare(a.getTick(), b.getTick()));
+            sheet.channel.preNotify();
+            operation.apply(sheet, selected, factory);
+            sheet.channel.postNotify();
+        }
+
+        this.getGraph().pickSelected();
+    }
+
+    private void reselect(UIKeyframeSheet sheet, List<Keyframe> keyframes)
+    {
+        sheet.selection.clear();
+
+        for (Keyframe keyframe : keyframes)
+        {
+            int index = sheet.channel.getKeyframes().indexOf(keyframe);
+
+            if (index >= 0)
+            {
+                sheet.selection.add(index);
+            }
+        }
+    }
+
+    private void openKeyframeTools()
+    {
+        this.getContext().replaceContextMenu((menu2) ->
+        {
+            menu2.action(Icons.REVERSE, IKey.raw("Reverse in time"), this::reverseKeyframes);
+            menu2.action(Icons.EXCHANGE, IKey.raw("Mirror values"), this::mirrorKeyframes);
+            menu2.action(Icons.REFRESH, IKey.raw("Make seamless loop"), this::makeLoop);
+            menu2.action(Icons.PARTICLE, IKey.raw("Add noise"), this::addNoise);
+            menu2.action(Icons.CURVES, IKey.raw("Smooth values"), this::smoothKeyframes);
+            menu2.action(Icons.MOVE_LEFT, IKey.raw("Shift -10 ticks"), () -> this.shiftKeyframes(-10));
+            menu2.action(Icons.MOVE_LEFT, IKey.raw("Shift -1 tick"), () -> this.shiftKeyframes(-1));
+            menu2.action(Icons.MOVE_RIGHT, IKey.raw("Shift +1 tick"), () -> this.shiftKeyframes(1));
+            menu2.action(Icons.MOVE_RIGHT, IKey.raw("Shift +10 ticks"), () -> this.shiftKeyframes(10));
+        });
+    }
+
+    private void reverseKeyframes()
+    {
+        this.forSelected(false, 2, (sheet, selected, factory) ->
+        {
+            float min = selected.get(0).getTick();
+            float max = selected.get(selected.size() - 1).getTick();
+
+            for (Keyframe keyframe : selected)
+            {
+                float lx = keyframe.lx;
+                float ly = keyframe.ly;
+
+                keyframe.setTick(min + max - keyframe.getTick(), false);
+                keyframe.lx = keyframe.rx;
+                keyframe.ly = keyframe.ry;
+                keyframe.rx = lx;
+                keyframe.ry = ly;
+            }
+
+            sheet.channel.sort();
+            this.reselect(sheet, selected);
+        });
+    }
+
+    private void mirrorKeyframes()
+    {
+        this.forSelected(true, 2, (sheet, selected, factory) ->
+        {
+            double min = Double.MAX_VALUE;
+            double max = -Double.MAX_VALUE;
+
+            for (Keyframe keyframe : selected)
+            {
+                double y = factory.getY(keyframe.getValue());
+
+                min = Math.min(min, y);
+                max = Math.max(max, y);
+            }
+
+            double pivot = (min + max) / 2D;
+
+            for (Keyframe keyframe : selected)
+            {
+                keyframe.setValue(factory.yToValue(pivot * 2D - factory.getY(keyframe.getValue())));
+                keyframe.ly = -keyframe.ly;
+                keyframe.ry = -keyframe.ry;
+            }
+        });
+    }
+
+    private void makeLoop()
+    {
+        this.forSelected(true, 2, (sheet, selected, factory) ->
+        {
+            Keyframe first = selected.get(0);
+            Keyframe last = selected.get(selected.size() - 1);
+
+            last.setValue(factory.yToValue(factory.getY(first.getValue())));
+            last.ly = first.ly;
+            last.ry = first.ry;
+        });
+    }
+
+    private void addNoise()
+    {
+        java.util.Random random = new java.util.Random();
+
+        this.forSelected(true, 1, (sheet, selected, factory) ->
+        {
+            double min = Double.MAX_VALUE;
+            double max = -Double.MAX_VALUE;
+
+            for (Keyframe keyframe : selected)
+            {
+                double y = factory.getY(keyframe.getValue());
+
+                min = Math.min(min, y);
+                max = Math.max(max, y);
+            }
+
+            double amplitude = max - min > 0.0001D ? (max - min) * 0.1D : 0.1D;
+
+            for (Keyframe keyframe : selected)
+            {
+                double y = factory.getY(keyframe.getValue()) + (random.nextDouble() * 2D - 1D) * amplitude;
+
+                keyframe.setValue(factory.yToValue(y));
+            }
+        });
+    }
+
+    private void smoothKeyframes()
+    {
+        this.forSelected(true, 3, (sheet, selected, factory) ->
+        {
+            double[] values = new double[selected.size()];
+
+            for (int i = 0; i < values.length; i++)
+            {
+                values[i] = factory.getY(selected.get(i).getValue());
+            }
+
+            for (int i = 1; i < values.length - 1; i++)
+            {
+                double smoothed = (values[i - 1] + values[i] * 2D + values[i + 1]) / 4D;
+
+                selected.get(i).setValue(factory.yToValue(smoothed));
+            }
+        });
+    }
+
+    private void shiftKeyframes(float offset)
+    {
+        this.forSelected(false, 1, (sheet, selected, factory) ->
+        {
+            float shift = Math.max(offset, -selected.get(0).getTick());
+
+            for (Keyframe keyframe : selected)
+            {
+                keyframe.setTick(keyframe.getTick() + shift, false);
+            }
+
+            sheet.channel.sort();
+            this.reselect(sheet, selected);
+        });
     }
 
     /* Sheet editing */
