@@ -161,10 +161,17 @@ public class UIOverlayPanel extends UIElement
     {
         int color = BBSSettings.primaryColor.get();
 
-        context.batcher.dropShadow(this.area.x, this.area.y, this.area.ex(), this.area.ey(), 10, Colors.A25 | color, color);
-        this.area.render(context.batcher, Colors.mulRGB(color | Colors.A100, 0.1F));
+        if (BBSSettings.glassUi != null && BBSSettings.glassUi.get())
+        {
+            this.renderGlass(context, color);
+        }
+        else
+        {
+            context.batcher.dropShadow(this.area.x, this.area.y, this.area.ex(), this.area.ey(), 10, Colors.A25 | color, color);
+            this.area.render(context.batcher, Colors.mulRGB(color | Colors.A100, 0.1F));
 
-        this.icons.area.render(context.batcher, Colors.CONTROL_BAR);
+            this.icons.area.render(context.batcher, Colors.CONTROL_BAR);
+        }
 
         if (this.close.area.isInside(context))
         {
@@ -180,5 +187,80 @@ public class UIOverlayPanel extends UIElement
     public void onClose()
     {
         this.events.emit(new UIOverlayCloseEvent(this));
+    }
+
+    /* BBSvE: frosted glass look (translucent gradient, bright rim, rounded corners) */
+    private void renderGlass(UIContext context, int color)
+    {
+        int x1 = this.area.x;
+        int y1 = this.area.y;
+        int x2 = this.area.ex();
+        int y2 = this.area.ey();
+        int h = y2 - y1;
+        int r = Math.max(2, Math.min(8, Math.min(x2 - x1, h) / 4));
+        int rgb = color & 0xffffff;
+        int top = (0x70 << 24) | lerpRGB(rgb, 0xffffff, 0.55F);
+        int bottom = (0xb8 << 24) | lerpRGB(rgb, 0x000000, 0.75F);
+
+        context.batcher.dropShadow(x1, y1, x2, y2, 14, Colors.A25 | rgb, rgb);
+
+        /* Middle section in one gradient, rounded corner rows one by one */
+        context.batcher.gradientVBox(x1, y1 + r, x2, y2 - r, lerpARGB(top, bottom, r / (float) Math.max(1, h - 1)), lerpARGB(top, bottom, (h - r) / (float) Math.max(1, h - 1)));
+
+        for (int i = 0; i < r; i++)
+        {
+            int inset = cornerInset(r, i);
+            int topRow = lerpARGB(top, bottom, i / (float) Math.max(1, h - 1));
+            int bottomRow = lerpARGB(top, bottom, (h - 1 - i) / (float) Math.max(1, h - 1));
+
+            context.batcher.box(x1 + inset, y1 + i, x2 - inset, y1 + i + 1, topRow);
+            context.batcher.box(x1 + inset, y2 - i - 1, x2 - inset, y2 - i, bottomRow);
+        }
+
+        /* Soft shine on the upper part */
+        context.batcher.gradientVBox(x1 + 2, y1 + r, x2 - 2, y1 + Math.max(r + 1, h / 3), 0x22ffffff, 0x00ffffff);
+
+        /* Bright rim: strongest on top, faint on the bottom */
+        int hi = 0x99ffffff;
+        int mid = 0x55ffffff;
+        int low = 0x33ffffff;
+
+        context.batcher.box(x1 + r, y1, x2 - r, y1 + 1, hi);
+        context.batcher.box(x1 + r, y2 - 1, x2 - r, y2, low);
+        context.batcher.box(x1, y1 + r, x1 + 1, y2 - r, mid);
+        context.batcher.box(x2 - 1, y1 + r, x2, y2 - r, mid);
+
+        for (int i = 0; i < r; i++)
+        {
+            int inset = cornerInset(r, i);
+
+            context.batcher.box(x1 + inset, y1 + i, x1 + inset + 1, y1 + i + 1, hi);
+            context.batcher.box(x2 - inset - 1, y1 + i, x2 - inset, y1 + i + 1, hi);
+            context.batcher.box(x1 + inset, y2 - i - 1, x1 + inset + 1, y2 - i, low);
+            context.batcher.box(x2 - inset - 1, y2 - i - 1, x2 - inset, y2 - i, low);
+        }
+    }
+
+    private static int cornerInset(int r, int row)
+    {
+        double dy = r - row - 0.5D;
+
+        return (int) Math.ceil(r - Math.sqrt(Math.max(0D, r * r - dy * dy)));
+    }
+
+    private static int lerpRGB(int a, int b, float t)
+    {
+        int red = (int) (((a >> 16) & 255) * (1F - t) + ((b >> 16) & 255) * t);
+        int green = (int) (((a >> 8) & 255) * (1F - t) + ((b >> 8) & 255) * t);
+        int blue = (int) ((a & 255) * (1F - t) + (b & 255) * t);
+
+        return (red << 16) | (green << 8) | blue;
+    }
+
+    private static int lerpARGB(int a, int b, float t)
+    {
+        int alpha = (int) (((a >>> 24) & 255) * (1F - t) + ((b >>> 24) & 255) * t);
+
+        return (alpha << 24) | lerpRGB(a, b, t);
     }
 }
